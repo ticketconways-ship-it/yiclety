@@ -157,12 +157,12 @@ client.on("messageCreate", async (msg) => {
       .addOptions([
         {
           label: "Başvuru",
-          value: "game_ticket", // Slash komutu (ticket.js) ile eşitlendi
+          value: "support_ticket", // Slash komutu (ticket.js) ile eşitlendi
           emoji: { id: "1509239478445936760", animated: true, name: "Levs" },
         },
         {
           label: "Destek & Şikayet",
-          value: "support_ticket", // Slash komutu (ticket.js) ile eşitlendi
+          value: "game_ticket", // Slash komutu (ticket.js) ile eşitlendi
           emoji: { id: "1509239545722568965", animated: true, name: "Controller" },
         },
         {
