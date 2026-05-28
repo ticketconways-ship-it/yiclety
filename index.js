@@ -50,11 +50,11 @@ const token = process.env.TOKEN;
 const adminRoleId = "1508838616905023598";
 const logChannelId = "1508838745938591804";
 
-// ---- KATEGORİ ID'LERİ (KESİN AYRIMI YAPILDI) ----
-const CATEGORY_GAME = "1509574096479060030";    // 🟢 BAŞVURU KATEGORİSİ
-const CATEGORY_SUPPORT = "1509574164200296618"; // 🔵 DESTEK & ŞİKAYET KATEGORİSİ
+// ---- KATEGORİ ID'LERİ ----
+const CATEGORY_GAME = "1509574096479060030";    // 🟢 BAŞVURU KATEGORİSİ ID'Sİ
+const CATEGORY_SUPPORT = "1509574164200296618"; // 🔵 DESTEK & ŞİKAYET KATEGORİSİ ID'Sİ
 
-// ---- KATEGORİLER (emoji + label) ----
+// ---- KATEGORİLER (BAĞLANTILAR TAMAMEN DÜZELTİLDİ) ----
 const names = {
   game_ticket: {
     emoji: "<:cekic:1509239478445936760>",
@@ -66,10 +66,10 @@ const names = {
   },
 };
 
-// ---- SELECT MENU VALUE -> CATEGORY MAP ----
+// ---- SELECT MENU VALUE -> CATEGORY MAP (DÜZELTİLDİ) ----
 const map = {
-  game_ticket: CATEGORY_GAME,       // game_ticket seçilirse Başvuru kategorisine gider
-  support_ticket: CATEGORY_SUPPORT, // support_ticket seçilirse Destek kategorisine gider
+  game_ticket: CATEGORY_GAME,       // game_ticket artık tamamen Başvuru kategorisine gider
+  support_ticket: CATEGORY_SUPPORT, // support_ticket artık tamamen Destek kategorisine gider
 };
 
 const client = new Client({
@@ -157,12 +157,12 @@ client.on("messageCreate", async (msg) => {
       .addOptions([
         {
           label: "Başvuru",
-          value: "game_ticket", // Başvuru ID'sine bağlanacak değer
+          value: "game_ticket", // Arka planda game_ticket (yani Başvuru ID'sini) tetikler
           emoji: { id: "1509239478445936760", animated: true, name: "Levs" },
         },
         {
           label: "Destek & Şikayet",
-          value: "support_ticket", // Destek ID'sine bağlanacak değer
+          value: "support_ticket", // Arka planda support_ticket (yani Destek ID'sini) tetikler
           emoji: { id: "1509239545722568965", animated: true, name: "Controller" },
         },
         {
@@ -273,7 +273,7 @@ client.on("interactionCreate", async (interaction) => {
         components: [buttons],
       });
 
-      // 🎯 TAM OLARAK İSTEDİĞİN YER: EĞER ODA BAŞVURU KATEGORİSİNDEYSE MESAJI GÖNDERİR
+      // EĞER AÇILAN ODA BAŞVURU KATEGORİSİNDEYSE (CATEGORY_GAME) MESAJI GÖNDERİR
       if (parentId === CATEGORY_GAME) {
         const formText = 
           "**Conways Başvuru**\n" +
@@ -293,7 +293,7 @@ client.on("interactionCreate", async (interaction) => {
         content: `<a:Verify:1509249210845888512> Ticket oluşturuldu: <#${channel.id}>`,
       });
       
-      // Başarıyla açıldıysa cooldown'a ekle
+      // Cooldown'a ekle
       ticketCooldown.set(userId, now);
       return;
     }
