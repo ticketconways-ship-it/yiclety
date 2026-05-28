@@ -52,17 +52,17 @@ const adminRoleId = "1508838616905023598";
 const logChannelId = "1508838745938591804";
 
 // ---- KATEGORİ ID'LERİ ----
-const CATEGORY_SUPPORT = "1509574164200296618"; // -Basvuru
-const CATEGORY_GAME = "1509574096479060030"; // - Destek
+const CATEGORY_SUPPORT = "1509574096479060030"; // -Basvuru
+const CATEGORY_GAME = "1509574164200296618"; // - Destek
 // ---- KATEGORİLER (emoji + label) ----
 const names = {
   support_ticket: {
     emoji: "<:cekic:1509239478445936760>",
-    label: "Destek & Şikayet",
+    label: "Başvuru",
   },
   game_ticket: {
     emoji: "<:destek:1509239545722568965>",
-    label: "Başvuru",
+    label: "Destek & Şikayet",
   },
 };
 
@@ -156,12 +156,12 @@ client.on("messageCreate", async (msg) => {
       .setPlaceholder("🎫 Ticket Açmak İçin Kategori Seçiniz")
       .addOptions([
         {
-          label: "Destek, Bug & Teknik Sorunlar",
+          label: "Başvuru",
           value: "support_ticket",
           emoji: { id: "1509239478445936760", animated: true, name: "Levs" },
         },
         {
-          label: "Oyun İçi Sorunlar & Rol Hataları",
+          label: "Destek & Şikayet",
           value: "game_ticket",
           emoji: { id: "1509239545722568965", animated: true, name: "Controller" },
         },
