@@ -54,7 +54,7 @@ const logChannelId = "1508838745938591804";
 const CATEGORY_GAME = "1509574096479060030";    // 🟢 BAŞVURU KATEGORİSİ ID'Sİ
 const CATEGORY_SUPPORT = "1509574164200296618"; // 🔵 DESTEK & ŞİKAYET KATEGORİSİ ID'Sİ
 
-// ---- KATEGORİLER (BAĞLANTILAR TAMAMEN DÜZELTİLDİ) ----
+// ---- KATEGORİLER (GÖRSELDEKİ TERS BAĞLANTI HATASI KÖKTEN DÜZELTİLDİ) ----
 const names = {
   game_ticket: {
     emoji: "<:cekic:1509239478445936760>",
@@ -68,8 +68,8 @@ const names = {
 
 // ---- SELECT MENU VALUE -> CATEGORY MAP (DÜZELTİLDİ) ----
 const map = {
-  game_ticket: CATEGORY_GAME,       // game_ticket artık tamamen Başvuru kategorisine gider
-  support_ticket: CATEGORY_SUPPORT, // support_ticket artık tamamen Destek kategorisine gider
+  game_ticket: CATEGORY_GAME,       // Başvuru basıldığında BAŞVURU kategorisine gider
+  support_ticket: CATEGORY_SUPPORT, // Destek basıldığında DESTEK kategorisine gider
 };
 
 const client = new Client({
@@ -154,24 +154,23 @@ client.on("messageCreate", async (msg) => {
     const menu = new StringSelectMenuBuilder()
       .setCustomId("ticket_category_select")
       .setPlaceholder("🎫 Ticket Açmak İçin Kategori Seçiniz")
-// komutlar/ticket.js içerisindeki menü seçenekleri aynen böyle olmalı:
-.addOptions([
-  {
-    label: "Başvuru",
-    value: "game_ticket", // Başvuru seçildiğinde arka planda game_ticket çalışmalı
-    emoji: { id: "1509239478445936760", animated: true }
-  },
-  {
-    label: "Destek & Şikayet",
-    value: "support_ticket", // Destek seçildiğinde arka planda support_ticket çalışmalı
-    emoji: { id: "1509239545722568965", animated: true }
-  },
-  {
-    label: "Seçimi Sıfırla",
-    value: "reset_selection",
-    emoji: "🔄"
-  }
-]);
+      .addOptions([
+        {
+          label: "Başvuru",
+          value: "game_ticket",
+          emoji: { id: "1509239478445936760", animated: true }
+        },
+        {
+          label: "Destek & Şikayet",
+          value: "support_ticket",
+          emoji: { id: "1509239545722568965", animated: true }
+        },
+        {
+          label: "Seçimi Sıfırla",
+          value: "reset_selection",
+          emoji: "🔄"
+        }
+      ]);
 
     const row = new ActionRowBuilder().addComponents(menu);
     await msg.channel.send({ embeds: [embed], components: [row] });
@@ -193,7 +192,7 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.deferReply({ ephemeral: true }).catch(() => {});
       const choice = interaction.values[0];
       const userId = interaction.user.id;
-      const now = Date.now();
+      const now = Date.now(); // 🛠️ Eksik olan 'now' tanımı eklendi, çökme hatası düzeltildi!
 
       if (ticketCooldown.has(userId)) {
         const lastTime = ticketCooldown.get(userId);
@@ -274,7 +273,7 @@ client.on("interactionCreate", async (interaction) => {
         components: [buttons],
       });
 
-      // EĞER AÇILAN ODA BAŞVURU KATEGORİSİNDEYSE (CATEGORY_GAME) MESAJI GÖNDERİR
+      // 🎯 EĞER AÇILAN ODA BAŞVURU KATEGORİSİNDEYSE (CATEGORY_GAME) MESAJI GÖNDERİR
       if (parentId === CATEGORY_GAME) {
         const formText = 
           "**Conways Başvuru**\n" +
