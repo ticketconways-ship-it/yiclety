@@ -48,12 +48,12 @@ function getNextTicketNumber() {
 // ---- CONFIG ----
 require("dotenv").config();
 const token = process.env.TOKEN;
-const adminRoleId = "1509239350884302918";
-const logChannelId = "1509232649204666479";
+const adminRoleId = "1508838616905023598";
+const logChannelId = "1508838745938591804";
 
 // ---- KATEGORİ ID'LERİ ----
-const CATEGORY_SUPPORT = "1509238826902487160"; // -Destek
-const CATEGORY_GAME = "1509238852332818573"; // - Basvuru
+const CATEGORY_SUPPORT = "1509574096479060030"; // -Basvuru
+const CATEGORY_GAME = "1509574164200296618"; // - Destek
 // ---- KATEGORİLER (emoji + label) ----
 const names = {
   support_ticket: {
