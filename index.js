@@ -37,7 +37,6 @@ function getNextTicketNumber() {
     fs.writeFileSync(ticketCounterPath, JSON.stringify(data, null, 2));
   } catch (e) {
     console.error("Railway dosya yazma izni hatası engellendi. Detay:", e);
-    // Eğer disk tamamen kilitliyse botun crash olmaması için rastgele bir numara üretip devam etmesini sağlıyoruz
     return Math.floor(Math.random() * 8999) + 1000;
   }
 
@@ -51,22 +50,23 @@ const token = process.env.TOKEN;
 const adminRoleId = "1508838616905023598";
 const logChannelId = "1508838745938591804";
 
-// ---- KATEGORİ ID'LERİ ----
-const CATEGORY_SUPPORT = "1509574096479060030"; // -Basvuru
-const CATEGORY_ = "1509574164200296618"; // - Destek
+// ---- KATEGORİ ID'LERİ (DÜZELTİLDİ) ----
+const CATEGORY_SUPPORT = "1509574164200296618"; // - Destek & Şikayet Kategorisi
+const CATEGORY_GAME = "1509574096479060030";    // - Başvuru Kategorisi
+
 // ---- KATEGORİLER (emoji + label) ----
 const names = {
   support_ticket: {
-    emoji: "<:cekic:1509239478445936760>",
-    label: "Başvuru",
-  },
-  game_ticket: {
     emoji: "<:destek:1509239545722568965>",
     label: "Destek & Şikayet",
   },
+  game_ticket: {
+    emoji: "<:cekic:1509239478445936760>",
+    label: "Başvuru",
+  },
 };
 
-// ---- SELECT MENU VALUE -> CATEGORY MAP ----
+// ---- SELECT MENU VALUE -> CATEGORY MAP (DÜZELTİLDİ) ----
 const map = {
   support_ticket: CATEGORY_SUPPORT,
   game_ticket: CATEGORY_GAME,
@@ -136,7 +136,7 @@ client.once("ready", () => {
   client.user.setActivity("Conways #Kingdom", { type: 0 });
 });
 
-// === PANEL KOMUTU ===
+// === PANEL KOMUTU (!sendticketpanel) ===
 client.on("messageCreate", async (msg) => {
   if (msg.author.bot) return;
   if (msg.content === "!sendticketpanel") {
@@ -157,12 +157,12 @@ client.on("messageCreate", async (msg) => {
       .addOptions([
         {
           label: "Başvuru",
-          value: "support_ticket",
+          value: "game_ticket", // Slash komutu (ticket.js) ile eşitlendi
           emoji: { id: "1509239478445936760", animated: true, name: "Levs" },
         },
         {
           label: "Destek & Şikayet",
-          value: "_ticket",
+          value: "support_ticket", // Slash komutu (ticket.js) ile eşitlendi
           emoji: { id: "1509239545722568965", animated: true, name: "Controller" },
         },
         {
@@ -176,6 +176,7 @@ client.on("messageCreate", async (msg) => {
     await msg.channel.send({ embeds: [embed], components: [row] });
   }
 });
+
 // === TICKET COOLDOWN ===
 const ticketCooldown = new Map();
 const TICKET_COOLDOWN_MS = 3 * 60 * 1000; // 3 dakika
@@ -191,85 +192,89 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.deferReply({ ephemeral: true }).catch(() => {});
       const choice = interaction.values[0];
       const userId = interaction.user.id;
-const now = Date.now();
+      const now = Date.now();
 
-if (ticketCooldown.has(userId)) {
-  const lastTime = ticketCooldown.get(userId);
-  const remaining = TICKET_COOLDOWN_MS - (now - lastTime);
+      if (ticketCooldown.has(userId)) {
+        const lastTime = ticketCooldown.get(userId);
+        const remaining = TICKET_COOLDOWN_MS - (now - lastTime);
 
-  if (remaining > 0) {
-    const seconds = Math.ceil(remaining / 1000);
-    return interaction.editReply({
-      content: `⏳ Ticket açmadan önce **${seconds} saniye** beklemelisin.`,
-      ephemeral: true,
-    });
-  }
-}
+        if (remaining > 0) {
+          const seconds = Math.ceil(remaining / 1000);
+          return interaction.editReply({
+            content: `⏳ Ticket açmadan önce **${seconds} saniye** beklemelisin.`,
+            ephemeral: true,
+          });
+        }
+      }
 
-if (choice === "reset_selection") {
-  await interaction.editReply({
-    content: "🔄 Seçiminiz sıfırlandı, yeni kategori seçebilirsiniz.",
-    ephemeral: true,
-  });
-  return;
-}
+      if (choice === "reset_selection") {
+        await interaction.editReply({
+          content: "🔄 Seçiminiz sıfırlandı, yeni kategori seçebilirsiniz.",
+          ephemeral: true,
+        });
+        return;
+      }
 
-const parentId = map[choice]; // ✅ HATA BURADAYDI
+      const parentId = map[choice];
+      if (!parentId) {
+        return interaction.editReply({
+          content: "❌ Seçilen kategoriye ait hedef oda bulunamadı. Lütfen yetkililere bildirin.",
+          ephemeral: true,
+        });
+      }
 
-const member = interaction.member;
-const displayName = member.nickname || interaction.user.username;
+      const member = interaction.member;
+      const displayName = member.nickname || interaction.user.username;
+      const ticketNumber = getNextTicketNumber();
 
-const ticketNumber = getNextTicketNumber();
+      const safeName = `${displayName} - ${ticketNumber}`
+        .toLowerCase()
+        .replace(/[^a-z0-9 -]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 90);
 
-
-const safeName = `${displayName} - ${ticketNumber}`
-  .toLowerCase()
-  .replace(/[^a-z0-9 -]/g, "")
-  .replace(/\s+/g, " ")
-  .trim()
-  .slice(0, 90);
-
-const channel = await interaction.guild.channels.create({
-  name: safeName,
-  type: ChannelType.GuildText,
-  parent: parentId || null,
-  topic: interaction.user.id,
-  permissionOverwrites: [
-    {
-      id: interaction.guild.roles.everyone,
-      deny: [PermissionsBitField.Flags.ViewChannel],
-    },
-    {
-      id: interaction.user.id,
-      allow: [
-        PermissionsBitField.Flags.ViewChannel,
-        PermissionsBitField.Flags.SendMessages,
-        PermissionsBitField.Flags.ReadMessageHistory,
-      ],
-    },
-    {
-      id: adminRoleId,
-      allow: [
-        PermissionsBitField.Flags.ViewChannel,
-        PermissionsBitField.Flags.SendMessages,
-        PermissionsBitField.Flags.ReadMessageHistory,
-      ],
-    },
-  ],
-});
-
+      const channel = await interaction.guild.channels.create({
+        name: safeName,
+        type: ChannelType.GuildText,
+        parent: parentId,
+        topic: interaction.user.id,
+        permissionOverwrites: [
+          {
+            id: interaction.guild.roles.everyone,
+            deny: [PermissionsBitField.Flags.ViewChannel],
+          },
+          {
+            id: interaction.user.id,
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.SendMessages,
+              PermissionsBitField.Flags.ReadMessageHistory,
+            ],
+          },
+          {
+            id: adminRoleId,
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.SendMessages,
+              PermissionsBitField.Flags.ReadMessageHistory,
+            ],
+          },
+        ],
+      });
 
       const createdAtUnix = Math.floor(Date.now() / 1000);
       const embed = buildTicketEmbed(interaction.user, choice, createdAtUnix);
       const buttons = buildTicketButtons(false);
 
       await channel.send({
-        content: `${names[choice]?.emoji || "<a:craft_fragment_rainbow32:1434935911954645144>"}  **<@${interaction.user.id}>** <@&1508838616905023598>`,
+        content: `${names[choice]?.emoji || "🎫"}  **<@${interaction.user.id}>** <@&${adminRoleId}>`,
         embeds: [embed],
         components: [buttons],
       });
 
-      if (parentId === CATEGORY_SUPPORT) {
+      // BAŞVURU KATEGORİSİNDE AÇILDIYSA BAŞVURU FORMUNU GÖNDERİR (DÜZELTİLDİ)
+      if (parentId === CATEGORY_GAME) {
         const formText = 
           "**Conways Başvuru**\n" +
           "İsim :\n\n" +
@@ -287,6 +292,9 @@ const channel = await interaction.guild.channels.create({
       await interaction.editReply({
         content: `<a:Verify:1509249210845888512> Ticket oluşturuldu: <#${channel.id}>`,
       });
+      
+      // Başarıyla açıldıysa cooldown'a ekle
+      ticketCooldown.set(userId, now);
       return;
     }
     
@@ -362,52 +370,50 @@ const channel = await interaction.guild.channels.create({
         return;
       }
 
- // 🔒 ADMIN CLOSE
-if (customId === "admin_close_ticket") {
+      // 🔒 ADMIN CLOSE
+      if (customId === "admin_close_ticket") {
+        if (!isAdmin)
+          return interaction.reply({
+            content: "❌ Bu işlemi sadece yetkililer yapabilir.",
+            ephemeral: true,
+          });
 
-  if (!isAdmin)
-    return interaction.reply({
-      content: "❌ Bu işlemi sadece yetkililer yapabilir.",
-      ephemeral: true,
-    });
+        const logChannel = interaction.guild.channels.cache.get(logChannelId);
+        if (logChannel) {
+          await sendReadableTranscript(channel, logChannel, interaction.user);
+        }
 
-  const logChannel = interaction.guild.channels.cache.get(logChannelId);
-  if (logChannel) {
-    await sendReadableTranscript(channel, logChannel, interaction.user);
-  }
+        await interaction.reply({
+          content: "🔒 Ticket 5 saniye içinde kapatılıyor...",
+          ephemeral: true,
+        });
 
-  await interaction.reply({
-    content: "🔒 Ticket 5 saniye içinde kapatılıyor...",
-    ephemeral: true,
-  });
+        setTimeout(() => channel.delete().catch(() => {}), 5000);
+        return;
+      }
 
-  setTimeout(() => channel.delete().catch(() => {}), 5000);
-  return;
-}
-// 🔒 USER CLOSE
-if (customId === "user_close_ticket") {
+      // 🔒 USER CLOSE
+      if (customId === "user_close_ticket") {
+        const ownerId = channel.topic;
+        if (interaction.user.id !== ownerId && !isAdmin)
+          return interaction.reply({
+            content: "❌ Bu ticketı kapatmaya yetkiniz yok.",
+            ephemeral: true,
+          });
 
-  const ownerId = channel.topic;
-  if (interaction.user.id !== ownerId && !isAdmin)
-    return interaction.reply({
-      content: "❌ Bu ticketı kapatmaya yetkiniz yok.",
-      ephemeral: true,
-    });
+        const logChannel = interaction.guild.channels.cache.get(logChannelId);
+        if (logChannel) {
+          await sendReadableTranscript(channel, logChannel, interaction.user);
+        }
 
-  const logChannel = interaction.guild.channels.cache.get(logChannelId);
-  if (logChannel) {
-    await sendReadableTranscript(channel, logChannel, interaction.user);
-  }
+        await interaction.reply({
+          content: "🔒 Ticket 5 saniye içinde kapatılıyor...",
+          ephemeral: true,
+        });
 
-  await interaction.reply({
-    content: "🔒 Ticket 5 saniye içinde kapatılıyor...",
-    ephemeral: true,
-  });
-
-  setTimeout(() => channel.delete().catch(() => {}), 5000);
-  return;
-}
-
+        setTimeout(() => channel.delete().catch(() => {}), 5000);
+        return;
+      }
     }
   } catch (err) {
     console.error("Interaction error:", err);
@@ -416,16 +422,16 @@ if (customId === "user_close_ticket") {
 
 
 const { Collection } = require("discord.js");
-
 client.commands = new Collection();
 
 // komutlar klasörünü oku
 const commandsPath = path.join(__dirname, "komutlar");
-const commandFiles = fs.readdirSync(commandsPath).filter(f => f.endsWith(".js"));
-
-for (const file of commandFiles) {
-  const command = require(path.join(commandsPath, file));
-  client.commands.set(command.data.name, command);
+if (fs.existsSync(commandsPath)) {
+  const commandFiles = fs.readdirSync(commandsPath).filter(f => f.endsWith(".js"));
+  for (const file of commandFiles) {
+    const command = require(path.join(commandsPath, file));
+    client.commands.set(command.data.name, command);
+  }
 }
 
 // slash command handler
@@ -486,7 +492,6 @@ async function sendReadableTranscript(channel, logChannel, closingUser) {
   }
 }
 
-// BULUTTA ANLIK OLARAK YAKALANMAYAN HATALARI TUTARAK BOTUN TAMAMEN KAPANMASINI (CRASH) ENGELLER
 process.on("unhandledRejection", (reason, p) => {
   console.log(" [Gözetleme] Yakalanamayan Reddedilme:", reason, p);
 });
