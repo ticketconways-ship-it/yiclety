@@ -52,8 +52,8 @@ const adminRoleId = "1508838616905023598";
 const logChannelId = "1508838745938591804";
 
 // ---- KATEGORİ ID'LERİ ----
-const CATEGORY_SUPPORT = "1509574096479060030"; // -Basvuru
-const CATEGORY_GAME = "1509574164200296618"; // - Destek
+const CATEGORY_SUPPORT = "1509574164200296618"; // -Basvuru
+const CATEGORY_GAME = "1509574096479060030"; // - Destek
 // ---- KATEGORİLER (emoji + label) ----
 const names = {
   support_ticket: {
@@ -264,7 +264,7 @@ const channel = await interaction.guild.channels.create({
       const buttons = buildTicketButtons(false);
 
       await channel.send({
-        content: `${names[choice]?.emoji || "<a:craft_fragment_rainbow32:1434935911954645144>"}  **<@${interaction.user.id}>**`,
+        content: `${names[choice]?.emoji || "<a:craft_fragment_rainbow32:1434935911954645144>"}  **<@${interaction.user.id}>** <@&1508838616905023598>`,
         embeds: [embed],
         components: [buttons],
       });
