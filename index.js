@@ -53,7 +53,7 @@ const logChannelId = "1508838745938591804";
 
 // ---- KATEGORİ ID'LERİ ----
 const CATEGORY_SUPPORT = "1509574096479060030"; // -Basvuru
-const CATEGORY_GAME = "1509574164200296618"; // - Destek
+const CATEGORY_ = "1509574164200296618"; // - Destek
 // ---- KATEGORİLER (emoji + label) ----
 const names = {
   support_ticket: {
@@ -162,7 +162,7 @@ client.on("messageCreate", async (msg) => {
         },
         {
           label: "Destek & Şikayet",
-          value: "game_ticket",
+          value: "_ticket",
           emoji: { id: "1509239545722568965", animated: true, name: "Controller" },
         },
         {
