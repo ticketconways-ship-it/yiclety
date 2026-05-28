@@ -154,23 +154,24 @@ client.on("messageCreate", async (msg) => {
     const menu = new StringSelectMenuBuilder()
       .setCustomId("ticket_category_select")
       .setPlaceholder("🎫 Ticket Açmak İçin Kategori Seçiniz")
-      .addOptions([
-        {
-          label: "Başvuru",
-          value: "game_ticket", // Arka planda game_ticket (yani Başvuru ID'sini) tetikler
-          emoji: { id: "1509239478445936760", animated: true, name: "Levs" },
-        },
-        {
-          label: "Destek & Şikayet",
-          value: "support_ticket", // Arka planda support_ticket (yani Destek ID'sini) tetikler
-          emoji: { id: "1509239545722568965", animated: true, name: "Controller" },
-        },
-        {
-          label: "Seçimi Sıfırla",
-          value: "reset_selection",
-          emoji: "🔄",
-        },
-      ]);
+// komutlar/ticket.js içerisindeki menü seçenekleri aynen böyle olmalı:
+.addOptions([
+  {
+    label: "Başvuru",
+    value: "game_ticket", // Başvuru seçildiğinde arka planda game_ticket çalışmalı
+    emoji: { id: "1509239478445936760", animated: true }
+  },
+  {
+    label: "Destek & Şikayet",
+    value: "support_ticket", // Destek seçildiğinde arka planda support_ticket çalışmalı
+    emoji: { id: "1509239545722568965", animated: true }
+  },
+  {
+    label: "Seçimi Sıfırla",
+    value: "reset_selection",
+    emoji: "🔄"
+  }
+]);
 
     const row = new ActionRowBuilder().addComponents(menu);
     await msg.channel.send({ embeds: [embed], components: [row] });
