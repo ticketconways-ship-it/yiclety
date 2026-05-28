@@ -17,17 +17,29 @@ const fs = require("fs");
 const path = require("path");
 const htmlTranscripts = require("discord-html-transcripts");
 
-const ticketCounterPath = path.join(__dirname, "ticketCounter.json");
+// Railway / Bulut sistemleri için geçici (/tmp) klasörünü kullanmak çökmenin önüne geçer
+const ticketCounterPath = path.join("/tmp", "ticketCounter.json");
 
 function getNextTicketNumber() {
   let data = { last: 0 };
 
-  if (fs.existsSync(ticketCounterPath)) {
-    data = JSON.parse(fs.readFileSync(ticketCounterPath, "utf8"));
+  try {
+    if (fs.existsSync(ticketCounterPath)) {
+      data = JSON.parse(fs.readFileSync(ticketCounterPath, "utf8"));
+    }
+  } catch (e) {
+    console.error("Sayaç dosyası okunurken hata oluştu, sıfırdan başlanıyor:", e);
   }
 
   data.last += 1;
-  fs.writeFileSync(ticketCounterPath, JSON.stringify(data, null, 2));
+
+  try {
+    fs.writeFileSync(ticketCounterPath, JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.error("Railway dosya yazma izni hatası engellendi. Detay:", e);
+    // Eğer disk tamamen kilitliyse botun crash olmaması için rastgele bir numara üretip devam etmesini sağlıyoruz
+    return Math.floor(Math.random() * 8999) + 1000;
+  }
 
   return data.last;
 }
@@ -252,14 +264,12 @@ const channel = await interaction.guild.channels.create({
       const buttons = buildTicketButtons(false);
 
       await channel.send({
-        content: `${names[choice]?.emoji || "<a:craft_fragment_rainbow32:1434935911954645144>"}  **<@${interaction.user.id}>**  **<@&1509239350884302918>** `,
+        content: `${names[choice]?.emoji || "<a:craft_fragment_rainbow32:1434935911954645144>"}  **<@${interaction.user.id}>**`,
         embeds: [embed],
         components: [buttons],
       });
 
-      // İSTEDİĞİN BAŞVURU FORMU BURADA GÖNDERİLİYOR
-      // Sadece 'game_ticket' (Başvuru) açıldığında tetiklenir
-      if (choice === "support_ticket") {
+      if (parentId === CATEGORY_GAME) {
         const formText = 
           "**Conways Başvuru**\n" +
           "İsim :\n\n" +
@@ -475,5 +485,13 @@ async function sendReadableTranscript(channel, logChannel, closingUser) {
     await logChannel.send({ content: `❌ **${channel.name}** için transkript dosyası oluşturulamadı.` }).catch(() => {});
   }
 }
+
+// BULUTTA ANLIK OLARAK YAKALANMAYAN HATALARI TUTARAK BOTUN TAMAMEN KAPANMASINI (CRASH) ENGELLER
+process.on("unhandledRejection", (reason, p) => {
+  console.log(" [Gözetleme] Yakalanamayan Reddedilme:", reason, p);
+});
+process.on("uncaughtException", (err, origin) => {
+  console.log(" [Gözetleme] Yakalanamayan İstisna:", err, origin);
+});
 
 client.login(token);
