@@ -50,26 +50,26 @@ const token = process.env.TOKEN;
 const adminRoleId = "1508838616905023598";
 const logChannelId = "1508838745938591804";
 
-// ---- KATEGORİ ID'LERİ (DÜZELTİLDİ) ----
-const CATEGORY_SUPPORT = "1509574164200296618"; // - Destek & Şikayet Kategorisi
-const CATEGORY_GAME = "1509574096479060030";    // - Başvuru Kategorisi
+// ---- KATEGORİ ID'LERİ (KESİN AYRIMI YAPILDI) ----
+const CATEGORY_GAME = "1509574096479060030";    // 🟢 BAŞVURU KATEGORİSİ
+const CATEGORY_SUPPORT = "1509574164200296618"; // 🔵 DESTEK & ŞİKAYET KATEGORİSİ
 
 // ---- KATEGORİLER (emoji + label) ----
 const names = {
-  support_ticket: {
-    emoji: "<:destek:1509239545722568965>",
-    label: "Destek & Şikayet",
-  },
   game_ticket: {
     emoji: "<:cekic:1509239478445936760>",
     label: "Başvuru",
   },
+  support_ticket: {
+    emoji: "<:destek:1509239545722568965>",
+    label: "Destek & Şikayet",
+  },
 };
 
-// ---- SELECT MENU VALUE -> CATEGORY MAP (DÜZELTİLDİ) ----
+// ---- SELECT MENU VALUE -> CATEGORY MAP ----
 const map = {
-  support_ticket: CATEGORY_SUPPORT,
-  game_ticket: CATEGORY_GAME,
+  game_ticket: CATEGORY_GAME,       // game_ticket seçilirse Başvuru kategorisine gider
+  support_ticket: CATEGORY_SUPPORT, // support_ticket seçilirse Destek kategorisine gider
 };
 
 const client = new Client({
@@ -157,12 +157,12 @@ client.on("messageCreate", async (msg) => {
       .addOptions([
         {
           label: "Başvuru",
-          value: "game_ticket", // Slash komutu (ticket.js) ile eşitlendi
+          value: "game_ticket", // Başvuru ID'sine bağlanacak değer
           emoji: { id: "1509239478445936760", animated: true, name: "Levs" },
         },
         {
           label: "Destek & Şikayet",
-          value: "support_ticket", // Slash komutu (ticket.js) ile eşitlendi
+          value: "support_ticket", // Destek ID'sine bağlanacak değer
           emoji: { id: "1509239545722568965", animated: true, name: "Controller" },
         },
         {
@@ -273,7 +273,7 @@ client.on("interactionCreate", async (interaction) => {
         components: [buttons],
       });
 
-      // BAŞVURU KATEGORİSİNDE AÇILDIYSA BAŞVURU FORMUNU GÖNDERİR (DÜZELTİLDİ)
+      // 🎯 TAM OLARAK İSTEDİĞİN YER: EĞER ODA BAŞVURU KATEGORİSİNDEYSE MESAJI GÖNDERİR
       if (parentId === CATEGORY_GAME) {
         const formText = 
           "**Conways Başvuru**\n" +
