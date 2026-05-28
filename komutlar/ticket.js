@@ -1,63 +1,85 @@
-const { 
-  SlashCommandBuilder, 
-  EmbedBuilder, 
-  ActionRowBuilder, 
-  StringSelectMenuBuilder, 
-  PermissionsBitField 
-} = require("discord.js");
+const {
+    SlashCommandBuilder,
+    EmbedBuilder,
+    ActionRowBuilder,
+    StringSelectMenuBuilder,
+    PermissionsBitField,
+    AttachmentBuilder,
+} = require('discord.js');
+
+const bannerFile = new AttachmentBuilder('./conways.webp', {
+    name: 'conways.webp'
+});
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("ticket")
-    .setDescription("Destek ve başvuru panelini gönderir."),
+    data: new SlashCommandBuilder()
+        .setName('ticket')
+        .setDescription('Destek sistemi panelini gönderir.')
+        .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator),
 
-  async execute(interaction) {
-    // Sadece yönetici yetkisi olanların bu komutu kullanmasını istiyorsan bu kontrol kalabilir
-    if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-      return interaction.reply({ 
-        content: "❌ Bu komutu kullanmak için `Yönetici` yetkisine sahip olmalısın.", 
-        ephemeral: true 
-      });
-    }
+    async execute(interaction) {
 
-    const embed = new EmbedBuilder()
-      .setTitle("Conways #Kingdom - Destek Sistemi")
-      .setDescription(
-        "🎫 Sunucumuzla ilgili işlemler için aşağıdan uygun kategoriyi seçerek destek talebi oluşturabilirsiniz.\n\n" +
-        "🟢 **Başvuru:** Ekip veya yetkili başvuruları için form doldurmanızı sağlar.\n" +
-        "🔵 **Destek & Şikayet:** Sunucu içi sorunlar ve şikayetleriniz için yetkililerle görüşmenizi sağlar."
-      )
-      .setColor("#d41f1f")
-      .setFooter({ text: "Conways #Kingdom | Kategori Seçiniz" })
-      .setTimestamp();
+        try {
 
-    const menu = new StringSelectMenuBuilder()
-      .setCustomId("ticket_category_select")
-      .setPlaceholder("🎫 Ticket Açmak İçin Kategori Seçiniz")
-      .addOptions([
-        {
-          label: "Başvuru",
-          value: "game_ticket", // 🟢 index.js'deki Başvuru kategorisini (CATEGORY_GAME) tetikler
-          emoji: { id: "1509239478445936760", animated: true } // Çekiç emojisi
-        },
-        {
-          label: "Destek & Şikayet",
-          value: "support_ticket", // 🔵 index.js'deki Destek kategorisini (CATEGORY_SUPPORT) tetikler
-          emoji: { id: "1509239545722568965", animated: true } // Destek emojisi
-        },
-        {
-          label: "Seçimi Sıfırla",
-          value: "reset_selection",
-          emoji: "🔄"
+            await interaction.deferReply({ ephemeral: true });
+
+            const embed = new EmbedBuilder()
+                .setTitle('Ticket Sistemi')
+                .setDescription(
+                    '<:conway:1509248142594539611> **Destek Sistemi Hakkında:**\n' +
+                    'Lütfen sorununuz ile **eşleşen başlığı** seçerek destek talebi açınız..\n\n' 
+                )
+                .setColor('#000000')
+                .setImage('attachment://conways.webp')
+                .setFooter({
+                    text: 'Conways #Kingdom Ticket´s'
+                });
+
+            const selectMenu = new StringSelectMenuBuilder()
+                .setCustomId('ticket_category_select')
+                .setPlaceholder('🎫 Ticket Açmak İçin Kategori Seçiniz')
+                .addOptions([
+                    {
+                        label: 'Başvuru',
+                        description: 'Ekibe Başvuruda Bulunmak İçin Açınınız.',
+                        value: 'game_ticket',
+                        emoji: { id: '1509239545722568965', animated: false, name: 'yardim' }
+                    },
+                    {
+                        label: 'Destek & Şikayet',
+                        description: 'Ekip İçi Destek Ve Şikayet İçin Açınız',
+                        value: 'support_ticket',
+                        emoji: { id: '1509239478445936760', animated: false, name: 'yardim' }
+                    },
+                    {
+                        label: 'Seçimi Sıfırla',
+                        description: 'Yapılan seçimi iptal eder.',
+                        value: 'reset_selection',
+                        emoji: { id: '1509246873129582703', animated: false, name: 'yardim' }
+                    },
+                ]);
+
+            const row = new ActionRowBuilder().addComponents(selectMenu);
+
+            await interaction.channel.send({
+                embeds: [embed],
+                components: [row],
+                files: [bannerFile],
+            });
+
+            await interaction.editReply({
+                content: '✅ Ticket paneli gönderildi.'
+            });
+
+        } catch (error) {
+
+            console.error('Ticket paneli gönderilirken hata:', error);
+
+            if (interaction.deferred || interaction.replied) {
+                await interaction.editReply({
+                    content: '❌ Hata oluştu.'
+                }).catch(() => {});
+            }
         }
-      ]);
-
-    const row = new ActionRowBuilder().addComponents(menu);
-
-    // Komutu kullandıktan sonra kanala paneli gönderir
-    await interaction.reply({
-      embeds: [embed],
-      components: [row]
-    }).catch(err => console.error("Ticket komutunda mesaj gönderilemedi:", err));
-  },
+    },
 };
