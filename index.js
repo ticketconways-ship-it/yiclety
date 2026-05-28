@@ -269,7 +269,7 @@ const channel = await interaction.guild.channels.create({
         components: [buttons],
       });
 
-      if (parentId === CATEGORY_GAME) {
+      if (parentId === CATEGORY_SUPPORT) {
         const formText = 
           "**Conways Başvuru**\n" +
           "İsim :\n\n" +
