@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 // BURAYA KENDİ BİLGİLERİNİ GİR
-const token = 'MTUwOTIzODUzNTIwOTg4MTYwMA.G-XpeC.lptqZWP_NtRVBK99ruNap-lPhUZi43OLRBJlCA';
+const token = 'MTUwOTIzODUzNTIwOTg4MTYwMA.GcYLGR.Rzq2xS2hv_6vKCnlT0mqJyL_g2rHghC1cvcGwE';
 const clientId = '1509238535209881600';
 const guildId =  '1509207186092458194'; 
 const commands = [];
