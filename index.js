@@ -57,11 +57,11 @@ const CATEGORY_SUPPORT = "1509574164200296618"; // 🔵 DESTEK & ŞİKAYET KATEG
 // ---- KATEGORİLER (GÖRSELDEKİ TERS BAĞLANTI HATASI KÖKTEN DÜZELTİLDİ) ----
 const names = {
   game_ticket: {
-    emoji: "<:cekic:1509239478445936760>",
+    emoji: "<:destek:1509239545722568965>",
     label: "Başvuru",
   },
   support_ticket: {
-    emoji: "<:destek:1509239545722568965>",
+    emoji: "<:cekic:1509239478445936760>",
     label: "Destek & Şikayet",
   },
 };
