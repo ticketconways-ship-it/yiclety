@@ -179,7 +179,7 @@ client.on("messageCreate", async (msg) => {
 
 // === TICKET COOLDOWN ===
 const ticketCooldown = new Map();
-const TICKET_COOLDOWN_MS = 3 * 60 * 1000; // 3 dakika
+const TICKET_COOLDOWN_MS = 1 * 60 * 1000; // 3 dakika
 
 // === INTERACTIONS ===
 client.on("interactionCreate", async (interaction) => {
